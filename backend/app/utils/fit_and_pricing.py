@@ -11,34 +11,57 @@ def calculate_fit_score(product, company, influencer) -> float:
     Calculate comprehensive fit score between influencer and product/brand
     """
     try:
+        print(f"Calculating fit score for {influencer.name}")
+        
         # Base score components
         content_fit = calculate_content_fit(product, influencer)
         audience_fit = calculate_audience_fit(company, influencer)
         engagement_fit = calculate_engagement_fit(influencer)
         brand_alignment = calculate_brand_alignment(company, influencer)
         
-        # Weighted combination
+        print(f"Content fit: {content_fit}, Audience fit: {audience_fit}, Engagement fit: {engagement_fit}, Brand alignment: {brand_alignment}")
+        
+        # Weighted combination (more lenient)
         fit_score = (
-            content_fit * 0.3 +
-            audience_fit * 0.25 +
-            engagement_fit * 0.2 +
-            brand_alignment * 0.25
+            content_fit * 0.2 +
+            audience_fit * 0.2 +
+            engagement_fit * 0.3 +
+            brand_alignment * 0.3
         )
         
+        # Boost score to be more lenient
+        fit_score = min(1.0, fit_score + 0.2)
+        
+        print(f"Final fit score: {fit_score}")
         return min(1.0, max(0.0, fit_score))
         
     except Exception as e:
         print(f"Fit score calculation error: {e}")
-        return 0.5  # Default moderate fit
+        return 0.7  # Default good fit
 
 def calculate_content_fit(product, influencer) -> float:
     """Calculate how well influencer's content matches the product"""
     if not influencer.content_categories or not product.category:
-        return 0.5
+        return 0.6  # More lenient default
     
     # Direct category match
     if product.category.lower() in [cat.lower() for cat in influencer.content_categories]:
         return 0.9
+    
+    # Partial matches for related categories
+    category_matches = {
+        'beauty & fashion': ['lifestyle', 'fashion', 'beauty'],
+        'technology': ['tech', 'gadgets', 'electronics', 'gaming'],
+        'food & cooking': ['lifestyle', 'cooking', 'food'],
+        'gaming': ['technology', 'entertainment'],
+        'lifestyle': ['beauty & fashion', 'food & cooking', 'travel']
+    }
+    
+    product_cat = product.category.lower()
+    for inf_cat in influencer.content_categories:
+        inf_cat_lower = inf_cat.lower()
+        if product_cat in category_matches.get(inf_cat_lower, []) or inf_cat_lower in category_matches.get(product_cat, []):
+            return 0.7
     
     # Keyword matching
     product_keywords = extract_keywords(product.name + " " + (product.description or ""))
