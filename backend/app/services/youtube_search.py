@@ -4,9 +4,17 @@ from openai import OpenAI
 from typing import List, Dict
 import re
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
-youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY) if YOUTUBE_API_KEY and YOUTUBE_API_KEY != "your_youtube_api_key_here" else None
+
+def get_youtube_client():
+    if YOUTUBE_API_KEY:
+        return build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
+    return None
 
 # Initialize OpenAI client only if API key is available
 openai_key = os.getenv("OPENAI_API_KEY")
@@ -17,7 +25,8 @@ async def search_youtube_influencers(query: str, max_results: int = 20) -> List[
     Search for YouTube channels based on query
     """
     try:
-        if not youtube or not YOUTUBE_API_KEY or YOUTUBE_API_KEY == "your_youtube_api_key_here":
+        youtube = get_youtube_client()
+        if not youtube or not YOUTUBE_API_KEY:
             print("YouTube API key not configured, returning mock data")
             return get_mock_influencers(query, max_results)
             
@@ -89,7 +98,8 @@ async def analyze_influencer(channel_id: str) -> Dict:
     """
     try:
         # Check if we're using mock data
-        if not youtube or not YOUTUBE_API_KEY or YOUTUBE_API_KEY == "your_youtube_api_key_here":
+        youtube = get_youtube_client()
+        if not youtube or not YOUTUBE_API_KEY:
             return get_mock_influencer_analysis(channel_id)
         
         # Get channel statistics
@@ -180,6 +190,10 @@ def get_mock_influencer_analysis(channel_id: str) -> Dict:
 def get_channel_statistics(channel_id: str) -> Dict:
     """Get basic channel statistics"""
     try:
+        youtube = get_youtube_client()
+        if not youtube:
+            return {}
+            
         request = youtube.channels().list(
             part="statistics,snippet",
             id=channel_id
@@ -207,6 +221,10 @@ def get_channel_statistics(channel_id: str) -> Dict:
 def get_recent_videos(channel_id: str, max_results: int = 10) -> List[Dict]:
     """Get recent videos from channel"""
     try:
+        youtube = get_youtube_client()
+        if not youtube:
+            return []
+            
         # First, get the uploads playlist ID
         request = youtube.channels().list(
             part="contentDetails",
@@ -253,6 +271,10 @@ def get_recent_videos(channel_id: str, max_results: int = 10) -> List[Dict]:
 def get_video_statistics(video_id: str) -> Dict:
     """Get statistics for a specific video"""
     try:
+        youtube = get_youtube_client()
+        if not youtube:
+            return {}
+            
         request = youtube.videos().list(
             part="statistics",
             id=video_id

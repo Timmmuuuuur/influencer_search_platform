@@ -14,6 +14,18 @@ async def scrape_and_analyze_brand(url: str) -> Dict:
     Scrape website and perform comprehensive brand analysis using AI
     """
     try:
+        # Validate URL
+        if not url or not url.startswith(('http://', 'https://')):
+            return {
+                'summary': 'Invalid URL provided',
+                'keywords': ['general', 'business'],
+                'target_audience': 'General audience',
+                'brand_values': ['quality', 'service'],
+                'content_categories': ['General'],
+                'tone': 'Professional',
+                'unique_selling_points': ['Quality service']
+            }
+        
         # Scrape website content
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
