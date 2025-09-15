@@ -12,7 +12,7 @@ from app.api.routes import router
 load_dotenv()
 
 # Database setup
-DATABASE_URL = "sqlite:///./influencer_platform.db"
+DATABASE_URL = "sqlite:///influencer_platform.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -25,7 +25,7 @@ app = FastAPI(title="Influencer Search Platform", version="1.0.0")
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],  # Allow all origins for development
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
